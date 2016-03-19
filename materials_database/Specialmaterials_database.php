@@ -37,11 +37,8 @@ class Specialmaterials_database extends SpecialPage {
 	$dbw = wfGetDB(DB_MASTER);
 	$this->getOutput()->setPageTitle('Materials Database Extension');
 	if ($this->getUser()->isLoggedIn()) {
-
-
 	    /** This code makes the navigation bar at the top */
 	    include("navigation.php");
-	  
 	    /** This code used for create  data entering form */
 	    $this->getOutput()->setPageTitle('Add New Material');
 	    $this->getOutput()->addHTML("
@@ -94,17 +91,29 @@ class Specialmaterials_database extends SpecialPage {
 	    }
 	    if (isset($_POST['add'])) {
 		$r = array('id'=>0,
-		'material_name'=>ucwords(strtolower($_POST['t1'])),
+		'material_name'=>str_ireplace(" ", "_", strtolower($_POST['t1'])),
 		'userID'=>$name,
 		'mat_private'=>$_POST['t3'],
 		'description'=>$_POST['t4'],
 		'mat_type'=>$_POST['t5']);
-		$ucwords = ucwords($_POST['t1']);
-		if (in_array($ucwords,$array)) {
-		    $this->getOutput()->addHTML("<h4 style='color:#FF0000'>Material already exists</h4>");
+                /**
+                  * Converts entered material name to lowercase and replaces "_" with a blank space
+                  * in the material name to ignore case and underscore. This is done to avoid duplicates.
+                  * Example 1: Carbon, CARBON, carbon
+                  * Example 2: Stainless 27Cr and Stainless_27Cr
+                  * In each of the above examples, all variations are treated as the same values.
+                  */
+             	$ucwords = str_ireplace(" ", "_", strtolower($_POST['t1']));
+		/** Checks if entered material name is valid (contains at least 3 letters in the beginning) */
+		if (!preg_match('/^[A-Za-z]{3,20}[ A-Za-z0-9_]*$/', $ucwords)) {
+                    $this->getOutput()->addHTML("<h4 style='color:#FF0000'>Enter a valid material name</h4>");
+                }
+		/** Checks if material already exists */
+                else if (in_array($ucwords,$array)) {
+                    $this->getOutput()->addHTML("<h4 style='color:#FF0000'>Material already exists</h4>");
 		}
 		else {
-		    /** inserting the values in database */    
+		    /** inserting the values in database */
 		    $res = $dbr->insert('material',$r,__METHOD__);
 		    $this->getOutput()->addHTML("<h4 style='color:#00FF00'>Data is inserted</h4>");
 		    $res1 = $dbr->select('material',array('max(id)'),"",__METHOD__);
@@ -114,11 +123,11 @@ class Specialmaterials_database extends SpecialPage {
 			    $id = $t; /** get maximum value of ID */
 			}
 		    }
-		    /** 
+		    /**
 		     * Iterating for loop for all traits which
 		     * have corresponding values in their text-
 		     * fields.
-		     */  
+		     */
 		    for ($i = 0; $i <= $limit; $i++) {
 			if ($_POST['d'.$i] != NULL) {
 			    $data = array('value'=>$_POST['d'.$i],'mat_id'=>$id,);
@@ -128,10 +137,10 @@ class Specialmaterials_database extends SpecialPage {
 		}
 	    }
 
-	    /** 
+	    /**
 	     * The following code fetches traits from database
 	     * and displays them for adding values for a new
-	     * material. 
+	     * material.
 	     */
 	    $res = $dbr->select('trait_table',array('trait_name','id'),"",__METHOD__);
 	    $v = 0;

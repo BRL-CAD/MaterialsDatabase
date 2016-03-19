@@ -55,7 +55,12 @@ class Specialmaterials_database_one extends SpecialPage {
 		't_type'=>$_POST['trait_type'],
 		'u_type'=>$_POST['units']);
 		$strtolower = str_ireplace(" ", "_", strtolower($_POST['trait_name']));
-		if (in_array($strtolower,$array)) {
+                /** Checks if entered trait name is valid (contains at least 3 letters in the beginning) */
+		if (!preg_match('/^[A-Za-z]{3,20}[ A-Za-z0-9_]*$/', $strtolower)) {
+                    $this->getOutput()->addHTML("<h4 style='color:#FF0000'>Enter a valid trait name</h4>");
+                }
+                /** Checks if trait already exists */
+                else if (in_array($strtolower,$array)) {
 		    $this->getOutput()->addHTML("<h4 style='color:#FF0000'>Trait already exists</h4>");
 		}
 		else {
@@ -73,7 +78,7 @@ class Specialmaterials_database_one extends SpecialPage {
 		    ADD CONSTRAINT `FK".$wgDBprefix.$strtolower."` FOREIGN KEY (`mat_id`) REFERENCES `material` (`id`) ON DELETE CASCADE;
 		    ");
 		    $res = $dbr->insert('trait_table',$r,__METHOD__);
-		    $this->getOutput()->addHTML("<h4 style='color:#00FF00'>Data is inserted</h4>");
+                    $this->getOutput()->addHTML("<h4 style='color:#00FF00'>Data is inserted</h4>");
 		}
 	    }
 	    $this->getOutput()->addHTML("<form action='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_one' method='post'><table><tr><td>Trait Name</td><td><input required type='text' name='trait_name'></tr><tr><td>Trait Type</td><td><select required  name='trait_type'>");
