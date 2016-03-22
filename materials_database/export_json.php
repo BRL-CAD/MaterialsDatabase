@@ -66,32 +66,21 @@ class Specialmaterials_database_export_json extends SpecialPage {
 		    ucwords(str_ireplace("_", " ", $_POST['exportselect'])) => $arrayexport[$i]);
 		}
 		$json_material = json_encode($export);
-		$myFile = "bp.json";
-		$fh = fopen($myFile, 'w') or die("Version issues");
-		$stringData = str_ireplace("Carbon","Peter",$json_material);
-		fwrite($fh, $json_material);
-		fclose($fh);
-		$filename = $_POST['exportselect'].".json";
-		$file = $wgServer.$wgScriptPath."/".$myFile;
-		$len = filesize($file); /** Calculate File Size */
-		ob_clean();
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-		header("Cache-Control: public"); 
-		header("Content-Description: File Transfer");
-		header('Content-Type: application/octet-stream');
-		/** Send File Name */
-		$header = "Content-Disposition: attachment; filename=$filename"; 
-		header($header );
-		header("Content-Transfer-Encoding: json");
-		header("Content-Length: ".$len); // Send File Size
-		@readfile($file);
+		$myFile = $_POST['exportselect'].".json";
+		echo $json_material;
+		/** Output Handling */
+	        header("Pragma: public");
+	        header("Expires: 0");
+	        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	        header("Cache-Control: private",false);
+	        header("Content-Transfer-Encoding: json;\n");
+	        header("Content-Disposition: attachment; filename=$myFile");
+	        header("Content-Type: application/force-download");
+	        header("Content-Type: application/octet-stream");
+	        header("Content-Type: application/download");
+	        header("Content-Description: File Transfer");
+	        die; /** Prevent any further output */		
 	    }
-	    /** End of insertion code */
-	    /** This code makes dynamic traits for material */
-	    $res = $dbr->select('trait_table',array('trait_name','id'),"",__METHOD__);
-	    $v = 0;
 	}
     }
 }
