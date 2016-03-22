@@ -78,7 +78,7 @@ class Specialmaterials_database_export_txt extends SpecialPage {
             header("Content-Type: application/octet-stream");
             header("Content-Type: application/download");
             header("Content-Description: File Transfer");
-            die; //Prevent any further output
+            die; /** Prevent any further output */
         }
     }
 }
