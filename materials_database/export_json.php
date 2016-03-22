@@ -42,7 +42,7 @@ class Specialmaterials_database_export_json extends SpecialPage {
 	    $this->getOutput()->addHTML("<form action='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json' method='post'><table><tr><td>Select the trait to be exported</td><td><select required name='exportselect'>");
 	    $searcht = $dbr->select('trait_table',array('trait_name'),"",__METHOD__);
 	    foreach ($searcht as $search1) {
-		$this->getOutput()->addHTML("<option value=".$search1->trait_name.">".$search1->trait_name."</option>");
+		$this->getOutput()->addHTML("<option value=".$search1->trait_name.">".ucwords(str_ireplace("_", " ", $search1->trait_name))."</option>");
 	    }
 	    $this->getOutput()->addHTML("</select></td></tr><tr><td><input type='submit' value='Export' name=export> </td></tr></table></form>");
 	    if (isset($_POST['export'])) {
