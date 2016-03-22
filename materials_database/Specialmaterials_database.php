@@ -147,7 +147,7 @@ class Specialmaterials_database extends SpecialPage {
 	    $this->getOutput()->addHTML("<table>");
 	    foreach ($res as $data) {
 		$this->getOutput()->addHTML("
-		    <tr><input type='hidden' value='".$data->trait_name."' name='".$v."'><td>".ucwords(str_ireplace("_", " ", $data->trait_name))."</td><td><input type='text' name='d".$v."' pattern='^[0-9]*\.?[0-9]*?$' title='Example: Density of water=1.0887'  placeholder='Enter the value of ".$data->trait_name."'></td>
+		    <tr><input type='hidden' value='".$data->trait_name."' name='".$v."'><td>".ucwords(str_ireplace("_", " ", $data->trait_name))."</td><td><input required type='text' name='d".$v."' pattern='^[0-9]*\.?[0-9]*?$' placeholder='Enter the value of ".ucwords(str_ireplace("_", " ", $data->trait_name))."'> <b>Example:</b> Density of water = 1.0887 g/cm^3</td>
 		    </tr>");
 		$v++;
 	    }
@@ -167,7 +167,6 @@ class Specialmaterials_database extends SpecialPage {
 		    $array[$g] = $samedata->trait_name;
 		    $g++;
 		}
-
 		for ($i = 0; $i < sizeof($array); $i++) {
 		    $res = $dbr->select(
 		    array('material',$array[$i]),
@@ -175,7 +174,7 @@ class Specialmaterials_database extends SpecialPage {
 		    array("mat_id='".$r[1]."'"),__METHOD__,array(),array($array[$i] => array('INNER JOIN', array("{$dbr->tableName('material')}.id='".$r[1]."'"))));
 		    $this->getOutput()->addHTML("<table border='1' width='550' height='30' cellspacing='1' cellpadding='3'><tr><th>Material Name</th><th>".ucwords(str_ireplace("_", " ", $array[$i]))."</th><th>Timestamp</th></tr>");
 		    foreach ($res as $row) {
-			$this->getOutput()->addHTML("<tr><td>".$row->material_name."</td><td>".$row->value."</td><td>".$row->timestamp."</td></tr>");
+			$this->getOutput()->addHTML("<tr><td>".$row->material_name."</td><td>".ucwords(str_ireplace("_", " ", $row->value))."</td><td>".$row->timestamp."</td></tr>");
 		    }
 		    $this->getOutput()->addHTML("</table><br>");
 		}
@@ -186,7 +185,6 @@ class Specialmaterials_database extends SpecialPage {
 	}
     }
 }
-
 
 /*
  * Local Variables:

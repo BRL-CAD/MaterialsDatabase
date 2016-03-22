@@ -14,7 +14,9 @@
 	</a> |
 	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_viewall'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/male226.svg' title='View all Materials' alt='Smiley' width='32' height='32'>
 	</a> |
-	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/export(1).png' title='Export by Trait' alt='Smiley' width='32' height='32'>
+	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/export(1).png' title='Export to json' alt='Smiley' width='32' height='32'>
+	</a> |
+	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_txt'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/txt_icon.png' title='Export to txt' alt='Smiley' width='32' height='32'>
 	</a> | ");
     $admins=array('bureaucrat','sysop');
     $user_group = $dbw->query("SELECT ug_group FROM `user_groups` WHERE ug_user=".$this->getUser()->getId()."");

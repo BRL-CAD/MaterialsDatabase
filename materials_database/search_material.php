@@ -36,10 +36,10 @@ class Specialmaterials_database_searchm extends SpecialPage {
 	/** This code makes the navigation bar at the top */
 	include("navigation.php");
 	$this->getOutput()->addHTML("<form action='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_searchm' method='post'><table>");
-	$this->getOutput()->addHTML("<tr><td>Select Trait to delete</td><td><select required name='materialdel'>");
+	$this->getOutput()->addHTML("<tr><td>Search By Material</td><td><select required name='materialdel'>");
 	$matdel = $dbr->select('material',array('material_name'),"",__METHOD__);
 	foreach ($matdel as $utype) {
-	    $this->getOutput()->addHTML("<option  value=".$utype->material_name.">".$utype->material_name."</option>");
+	    $this->getOutput()->addHTML("<option  value=".$utype->material_name.">".ucwords(str_ireplace("_", " ", $utype->material_name))."</option>");
 	}
 	$this->getOutput()->addHTML("</select></td></tr><tr><td><input type='submit' value='Search' name='searchm' ></td></tr></table></form>");
 	if (isset($_POST['searchm'])) {
@@ -64,7 +64,7 @@ class Specialmaterials_database_searchm extends SpecialPage {
 	    );
 	    $this->getOutput()->addHTML("<table border='1' width='550' height='30' cellspacing='1' cellpadding='3'><tr><th>Material Name</th><th>".ucwords(str_ireplace("_", " ", $array[$i]))."</th><th>Timestamp</th><th>Status</th></tr>");
 	    foreach ($res as $row) {
-		$this->getOutput()->addHTML("<tr><td>".$row->material_name."</td><td>".$row->value."</td><td>".$row->timestamp."</td><td>".$row->status."</td></tr>");
+		$this->getOutput()->addHTML("<tr><td>".ucwords(str_ireplace("_", " ", $row->material_name))."</td><td>".$row->value."</td><td>".$row->timestamp."</td><td>".$row->status."</td></tr>");
 	    }
 	    $this->getOutput()->addHTML("</table><br>");}
 	}

@@ -35,10 +35,10 @@ class Specialmaterials_database_searcht extends SpecialPage {
 
 	/** This code makes the navigation bar at the top */
 	include("navigation.php");
-    	$this->getOutput()->addHTML("<form action=http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_searcht method='post'><table><tr><td>Search TRAIT by Name</td><td><select required name='searcht'>");
+    	$this->getOutput()->addHTML("<form action=http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_searcht method='post'><table><tr><td>Search by Trait</td><td><select required name='searcht'>");
 	$searcht = $dbr->select('trait_table',array('trait_name'),"",__METHOD__);
 	foreach ($searcht as $search1) {
-	    $this->getOutput()->addHTML("<option value=".$search1->trait_name.">".$search1->trait_name."</option>");
+	    $this->getOutput()->addHTML("<option value=".$search1->trait_name.">".ucwords(str_ireplace("_", " ", $search1->trait_name))."</option>");
 	}
 	$this->getOutput()->addHTML("</select></td></tr><tr><td><input type='submit' value='Search' name=searchtr> </td></tr></table></form>");
 	if (isset($_POST['searcht'])) {
