@@ -60,7 +60,6 @@ $wgAutoloadClasses['Specialmaterials_database_export_txt'] = $dir.'export_txt.ph
 $wgAutoloadClasses['Specialmaterials_database_import'] = $dir.'import.php';
 $wgAutoloadClasses['Specialmaterials_database_upload'] = $dir.'upload.php';
 $wgExtensionMessagesFiles['materials_database'] = $dir .'materials_database.i18n.php';
-$wgExtensionMessagesFiles['materials_databaseAlias'] = $dir .'v.alias.php';
 $wgSpecialPages['materials_database'] = 'Specialmaterials_database';
 $wgSpecialPages['materials_database_one'] = 'Specialmaterials_database_one';
 $wgSpecialPages['materials_database_del'] = 'Specialmaterials_database_del';
