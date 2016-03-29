@@ -46,7 +46,7 @@ class Specialmaterials_database_del extends SpecialPage {
 		$this->getOutput()->addHTML("<tr><td>Select Trait to delete</td><td><select required name='traitsdel'>");
 		$resdel = $dbr->select('trait_table',array('trait_name'),"userID=$name",__METHOD__);
 		foreach ($resdel as $utype) {
-		    $this->getOutput()->addHTML("<option value=".$utype->trait_name.">".$utype->trait_name."</option>");
+		    $this->getOutput()->addHTML("<option value=".$utype->trait_name.">".ucwords(str_ireplace("_", " ", $utype->trait_name))."</option>");
 		}
 		$this->getOutput()->addHTML("</select></td></tr><tr><td><input type='submit' value='Delete' name='del' ></td></tr></table></form>");
 		if ($resdel->numRows() != 0) {

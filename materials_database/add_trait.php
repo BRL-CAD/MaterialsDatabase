@@ -39,6 +39,16 @@ class Specialmaterials_database_one extends SpecialPage {
 	    $this->getOutput()->setPageTitle('Materials Database Extension');
 	    $this->getOutput()->setPageTitle('Add New Trait');
 	    $dbw = wfGetDB(DB_MASTER);
+            $isadmin = false;
+            $admincheck = $dbw->query("SELECT ug_group FROM `user_groups` WHERE ug_user=".$name."");
+            $i = 0;
+            foreach ($admincheck as $checker) {
+                $admin[$i] = $checker->ug_group;
+                $i++;
+            }
+            if($i != 0) {
+                $isadmin = true;
+            }
 	    /** This code makes the navigation bar at the top */
 	    include("navigation.php");
 	    $this->getOutput()->addWikiMsg('add_trait');
@@ -80,17 +90,25 @@ class Specialmaterials_database_one extends SpecialPage {
 		    $res = $dbr->insert('trait_table',$r,__METHOD__);
                     $this->getOutput()->addHTML("<h4 style='color:#00FF00'>Data is inserted</h4>");
                     /** Gets the count of materials in database */
-                    $matquery = $dbr->select('material',array('count(id)'),"",__METHOD__);
+                    $matquery = $dbr->select('material', array('count(id)'), "", __METHOD__);
                     $matlimit = 0;
                     foreach ($matquery as $count) {
                         foreach ($count as $g) {
                             $matlimit = $g - 1;
                         }
                     }
-                   /** Inserts values for materials in newly created trait table */
-                    for ($i = 0; $i <= $matlimit; $i++) {
-                        if ($_POST['e'.$i] != NULL) {
-                            $matdata = array('value'=>$_POST['e'.$i],'mat_id'=>$i+1);
+                    $matprivatequery = $dbr->select('material', array('id', 'mat_private', 'userID'), "", __METHOD__);
+                    $index = 0;
+                    foreach($matprivatequery as $pquery) {
+                        if($pquery->mat_private == 0 || $pquery->mat_private == 1 && $pquery->userID == $name || $isadmin == true) { 
+                            $privatematerialid[$index] = $pquery->id;
+                            $index++;
+                        }
+                    }
+                    /** Inserts values for materials in newly created trait table */
+                    for ($i = 0; $i < $matlimit-1; $i++) {
+                            if ($_POST['e'.$i] != NULL) {
+                            $matdata = array('value'=>$_POST['e'.$i],'mat_id'=>$privatematerialid[$i]);
                             $resinsert = $dbr->insert($wgDBprefix.$strtolower,$matdata,__METHOD__);
                         }
                     }
@@ -99,7 +117,7 @@ class Specialmaterials_database_one extends SpecialPage {
 	    $this->getOutput()->addHTML("<form action='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_one' method='post'><table><tr><td>Trait Name</td><td><input required type='text' name='trait_name'></tr><tr><td>Trait Type</td><td><select required  name='trait_type'>");
 	    $tarray = $dbr->select('trait_type',array('id','type'),"",__METHOD__);
 	    foreach ($tarray as $ttype) {
-		$this->getOutput()->addHTML("<option value= ".$ttype->id.">".$ttype->type."</option>");
+		$this->getOutput()->addHTML("<option value= ".$ttype->id.">".ucwords(str_ireplace("_", " ", $ttype->type))."</option>");
 	    }
 	    $this->getOutput()->addHTML("</select></td></tr><tr><td>Trait Units(SI)</td><td><select required name='units'>");
 	    $uarray = $dbr->select('trait_units',array('id','units'),"",__METHOD__);
@@ -111,13 +129,15 @@ class Specialmaterials_database_one extends SpecialPage {
 	     * Fetches material names from database and
 	     * displays them for adding values for the new trait.
              */
-	    $resmat = $dbr->select('material',array('material_name','id'),"",__METHOD__);
+	    $resmat = $dbr->select('material',array('material_name', 'id', 'mat_private', 'userID'),"",__METHOD__);
 	    $v = 0;
 	    foreach ($resmat as $matdata) {
-                $this->getOutput()->addHTML("
+                if($matdata->mat_private == 0 || $matdata->mat_private == 1 && $matdata->userID == $name || $isadmin == true) {
+                    $this->getOutput()->addHTML("
                         <tr><input type='hidden' value='".$matdata->material_name."' name='".$v."'><td>".ucwords(str_ireplace("_", " ", $matdata->material_name))."</td><td><input required type='text' name='e".$v."' pattern='^[0-9]*\.?[0-9]*?$' placeholder='Enter the value of ".ucwords(str_ireplace("_", " ", $matdata->material_name))."'> <b>Example:</b> Density of Copper = 8.96 g/cm^3</td>
-                        </tr>");
-                $v++;
+                        </tr>");                 
+                    $v++;
+                }
             }
             /** Submit the values to insert into database. */
 	    $this->getOutput()->addHTML("<tr><td><input type='submit' value='Add' name='addtrait' ></td></tr></table></form>");

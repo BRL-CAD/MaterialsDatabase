@@ -53,7 +53,7 @@ class Specialmaterials_database_delm extends SpecialPage {
 		$this->getOutput()->addHTML("<tr><td>Select Material to delete</td><td><select required name='materialdel'>");
 		$matdel = $dbr->select('material',array('material_name'),"userID=$name",__METHOD__);
 		foreach ($matdel as $utype) {
-		    $this->getOutput()->addHTML("<option value=".$utype->material_name.">".$utype->material_name."</option>");
+		    $this->getOutput()->addHTML("<option value=".$utype->material_name.">".ucwords(str_ireplace("_", " ", $utype->material_name))."</option>");
 		}
 		$this->getOutput()->addHTML("</select></td></tr><tr><td><input type='submit' value='Delete' name='del' ></td></tr></table></form>");
 		if ($matdel->numRows() != 0) {

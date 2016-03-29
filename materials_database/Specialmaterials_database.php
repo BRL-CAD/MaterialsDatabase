@@ -48,7 +48,7 @@ class Specialmaterials_database extends SpecialPage {
 			    <td>Material Name</td><td><input required type='text' title='Example: Carbon' name='t1'></td>
 			</tr>
 			<tr>
-			    <td>Material Privacy</td><td><input required type='radio' name='t3' value='1' checked>Public &nbsp;<input required type='radio' name='t3' value='0'>Private</td>
+			    <td>Material Privacy</td><td><input required type='radio' name='t3' value='0' checked>Public &nbsp;<input required type='radio' name='t3' value='1'>Private</td>
 			</tr>
 			<tr>
 			    <td>Material Description</td><td><textarea required rows='6' cols='30' name='t4'></textarea></td>
@@ -56,18 +56,16 @@ class Specialmaterials_database extends SpecialPage {
 			<tr>
 			    <td>Material Type</td>
 			    <td>
-			    <select name='t5'>
-				<option value='1'>Metal</option>
-				<option value='2'>Non-metal</option>
-				<option value='3'>Fluid</option>
-				<option value='4'>Plastic</option>
-			    </select>
-			    </td>
-			</tr>
-		    </table>");
+			    <select required name='t5'>"
+            );
+            $marray = $dbr->select('material_type',array('id','mtype'),"",__METHOD__);
+	    /** Fetching list of material types from material_type table and displaying as options for dropdown */
+            foreach ($marray as $type) {
+		$this->getOutput()->addHTML("<option value= ".$type->id.">".ucwords(str_ireplace("_", " ", $type->mtype))."</option>");
+	    }
+            $this->getOutput()->addHTML("</select></td></tr></table>");
 	    $this->getOutput()->addHTML("<h4>Enter the values in <i>SI</i> units</h4>");
-
-	    /** This code is used for inserting the data in database */
+            /** This code is used for inserting the data in database */
 	    $res1 = $dbr->select('material',array('max(id)'),"",__METHOD__);
 	    $id = 0;
 	    foreach ($res1 as $f) {
@@ -136,7 +134,6 @@ class Specialmaterials_database extends SpecialPage {
 		    }
 		}
 	    }
-
 	    /**
 	     * The following code fetches traits from database
 	     * and displays them for adding values for a new

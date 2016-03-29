@@ -14,7 +14,7 @@
 	</a> |
 	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_viewall'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/male226.svg' title='View all Materials' alt='Smiley' width='32' height='32'>
 	</a> |
-	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/export(1).png' title='Export to json' alt='Smiley' width='32' height='32'>
+	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/json_icon.png' title='Export to json' alt='Smiley' width='32' height='32'>
 	</a> |
 	<a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_txt'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/txt_icon.png' title='Export to txt' alt='Smiley' width='32' height='32'>
 	</a> | ");
@@ -25,7 +25,7 @@
 	$array_ug[$i] = $ug_group->ug_group;
 	$i++;
     }
-    if ($user_group->numRows() ==! 0) {
+    if ($user_group->numRows() != 0) {
 	$this->getOutput()->addHTML("
 	    <a href='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_links'><img onmouseover='bigImg(this)' onmouseout='normalImg(this)' border='0' src='$wgStylePath/common/images/moderator1.svg' title='I am ADMIN' alt='Smiley' width='43' height='43'>
 	    </a>");
