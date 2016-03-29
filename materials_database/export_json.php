@@ -32,66 +32,159 @@ class Specialmaterials_database_export_json extends SpecialPage {
 	$name = $this->getUser()->getId();
 	$dbr = wfGetDB(DB_SLAVE);
 	$dbw = wfGetDB(DB_MASTER);
+        $isadmin = false;
+        $admincheck = $dbw->query("SELECT ug_group FROM `user_groups` WHERE ug_user=".$name."");
+        $i = 0;
+        foreach ($admincheck as $checker) {
+            $admin[$i] = $checker->ug_group;
+            $i++;
+        }
+        if($i != 0) {
+            $isadmin = true;
+        }
 	if ($this->getUser()->isLoggedIn()) {
     
-	    /** This code makes the navigation bar at the top */
+	    /** Include navigation bar */
 	    include("navigation.php");
 
-	    /** This code used for create  data entering form */
-	    $this->getOutput()->setPageTitle('Export');
-	    $this->getOutput()->addHTML("<form action='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json' method='post'><table><tr><td>Select the trait to be exported</td><td><select required name='exportselect'>");
+	    $this->getOutput()->setPageTitle('Export to json');
+            /** Display form to select a trait to export */
+	    $this->getOutput()->addHTML("<form action='http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json' method='post'><table><tr><td>Export by Trait</td><td><select required name='exporttrait'>");
 	    $searcht = $dbr->select('trait_table',array('trait_name'),"",__METHOD__);
-	    foreach ($searcht as $search1) {
-		$this->getOutput()->addHTML("<option value=".$search1->trait_name.">".$search1->trait_name."</option>");
+	    /** Fetch list of traits from traits table and display as a dropdown list */
+            foreach ($searcht as $traitindex) {
+		$this->getOutput()->addHTML("<option value=".$traitindex->trait_name.">".ucwords(str_ireplace("_", " ", $traitindex->trait_name))."</option>");
 	    }
-	    $this->getOutput()->addHTML("</select></td></tr><tr><td><input type='submit' value='Export' name=export> </td></tr></table></form>");
-	    if (isset($_POST['export'])) {
+	    $this->getOutput()->addHTML("</select></td><td><input type='submit' value='Export' name=export_trait> </td></tr></table></form>");
+            $this->getOutput()->addHTML("OR");
+            /** Display form to select a material to export */
+            $this->getOutput()->addHTML("<form action=http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_export_json method='post'><table><tr><td>Export by Material</td><td><select required name='exportmaterial'>");
+            $exportmaterial = $dbr->select('material', array('material_name', 'mat_private', 'userID'), "", __METHOD__);
+            /** Fetch list of materials from materials table and display as a dropdown list */
+            foreach ($exportmaterial as $matindex) {
+                if($matindex->mat_private == 0 || $matindex->mat_private == 1 && $matindex->userID == $name || $isadmin == true) {
+                     $this->getOutput()->addHTML("<option value=".$matindex->material_name.">".ucwords(str_ireplace("_", " ", $matindex->material_name))."</option>");
+                }     
+            }
+            $this->getOutput()->addHTML("</select></td><td><input type='submit' value='Export' name='export_material'> </td></tr></table></form>");     
+	    /** EXPORT BY TRAIT */
+            if (isset($_POST['export_trait'])) {
 		$this->getOutput()->disable();
-		$matdel = $dbr->select('material',array('material_name'),"",__METHOD__);
+                /** Fetch material names for trait */
+		$matdel = $dbr->select('material', array('material_name', 'id', 'mat_private', 'userID'), "", __METHOD__);
 		$f = 0;
 		foreach ($matdel as $samedata) {
-		    $arraymaterial[$f] = $samedata->material_name;
-		    $f++;
+                    $matprivacy[$f] = $samedata->mat_private;
+                    $matowner[$f] = $samedata->userID;
+                    if($samedata->mat_private == 0 || $samedata->mat_private == 1 && $samedata->userID == $name || $isadmin == true) {
+                        $arraymaterial[$f] = $samedata->material_name;
+                        $arraymaterialid[$f] = $samedata->id;
+                        $mat_counter = $f + 1;
+                        $f++;
+                    }
 		}
-		$valuebp = $dbr->select($_POST['exportselect'],array('value'),"",__METHOD__);
+		/** Fetch material values for trait */
+                $valuebp = $dbr->select($_POST['exporttrait'], array('value', 'mat_id'), "", __METHOD__);
 		$h = 0;
 		foreach ($valuebp as $samedata) {
-		    $arrayexport[$h] = $samedata->value;
-		    $h++;
+                    if($arraymaterialid[$h] == $samedata->mat_id) {
+                        $arrayexport[$h] = $samedata->value;
+                        $h++;
+                        if($h == $mat_counter) {
+                            break;
+                        }
+                    }
 		}
+                /** Combine arrays of material name and material value for trait */
 		$combine = array_combine($arraymaterial, $arrayexport);
 		$export = array();
-		for ($i = 0; $i < 5; $i++) {
-		    $export[] = array('Material' => $arraymaterial[$i],
-		    ucwords(str_ireplace("_", " ", $_POST['exportselect'])) => $arrayexport[$i]);
+		for ($i = 0; $i < $mat_counter; $i++) {
+		    $export[] = array('Material' => ucwords(str_ireplace("_", " ", $arraymaterial[$i])), 'Value' => $arrayexport[$i]);
 		}
-		$json_material = json_encode($export);
-		$myFile = "bp.json";
-		$fh = fopen($myFile, 'w') or die("Version issues");
-		$stringData = str_ireplace("Carbon","Peter",$json_material);
-		fwrite($fh, $json_material);
-		fclose($fh);
-		$filename = $_POST['exportselect'].".json";
-		$file = $wgServer.$wgScriptPath."/".$myFile;
-		$len = filesize($file); /** Calculate File Size */
-		ob_clean();
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-		header("Cache-Control: public"); 
-		header("Content-Description: File Transfer");
-		header('Content-Type: application/octet-stream');
-		/** Send File Name */
-		$header = "Content-Disposition: attachment; filename=$filename"; 
-		header($header );
-		header("Content-Transfer-Encoding: json");
-		header("Content-Length: ".$len); // Send File Size
-		@readfile($file);
+		/** Encode the combined material data in json */
+                $json_material = json_encode($export);
+		/** Set the name of exporting trait as file name */
+                $myFile = $_POST['exporttrait'].".json";
+		/** Write json data to file */
+                echo $json_material;
+		/** Output Handling */
+	        header("Pragma: public");
+	        header("Expires: 0");
+	        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	        header("Cache-Control: private",false);
+	        header("Content-Transfer-Encoding: json;\n");
+	        header("Content-Disposition: attachment; filename=$myFile");
+	        header("Content-Type: application/force-download");
+	        header("Content-Type: application/octet-stream");
+	        header("Content-Type: application/download");
+	        header("Content-Description: File Transfer");
+		/** Prevent any further output */
+	        die;
 	    }
-	    /** End of insertion code */
-	    /** This code makes dynamic traits for material */
-	    $res = $dbr->select('trait_table',array('trait_name','id'),"",__METHOD__);
-	    $v = 0;
+            /** EXPORT BY MATERIAL */
+            /** Fetch material ID for identified materials in trait tables */
+            if (isset($_POST['export_material'])) {
+                $resid = $dbr->select('material',array('id'),"material_name='".$_POST['exportmaterial']."'",__METHOD__);
+                foreach ($resid as $d) {
+                    $r[0] = $d->id;
+                }
+            /** Fetch list of trait names and their unit types from trait table */
+            $restype = $dbr->select('trait_table',array('trait_name','u_type'),"",__METHOD__);
+            $g = 0;
+            foreach ($restype as $samedata) {
+                $traitnames[$g] = $samedata->trait_name;
+                $traitunits[$g] = $samedata->u_type;
+                $g++;
+            }
+            for ($i = 0; $i < sizeof($traitnames); $i++ ) {
+                /** Fetch material value for each trait */
+                $restrait = $dbr->select(
+                        array("{$dbr->tableName( $traitnames[$i] )}"),
+                        array('value'),
+                        array("{$dbr->tableName( $traitnames[$i] )}.mat_id='".$r[0]."'"),__METHOD__
+                );
+                foreach ($restrait as $row) {
+                    $output_matvalue[$i] = $row->value;
+                }
+                /** Fetch unit of each trait using unit type (fetched from earlier query) */
+                $resunit = $dbr->select(
+                    array("{$dbr->tableName( 'trait_units' )}"),
+                    array('units'),                      
+                    array("{$dbr->tableName( 'trait_units' )}.id='".$traitunits[$i]."'"),__METHOD__
+                );
+                foreach ($resunit as $row) {
+                    $output_traitunit[$i] = $row->units;
+                }
+            }
+            /** Combine arrays of trait name and trait value for material */
+            $combine = array_combine($traitnames, $output_matvalue);
+            /** Combine previous result (trait name and value) with unit of traits */
+            $combines = array_combine($combine, $output_traitunit);
+            $export = array();
+            for ($i = 0; $i < sizeof($traitnames); $i++) {
+                $export[] = array('Trait' => ucwords(str_ireplace("_", " ", $traitnames[$i])),
+                    'Value' => $output_matvalue[$i], 'Unit' => $output_traitunit[$i]);
+            }
+            /** Encode the combined material data in json */
+            $json_material = json_encode($export);
+            /** Set the name of exporting material as file name */
+            $myFile = $_POST['exportmaterial'].".json";
+            /** Write json data to file */
+            echo $json_material;
+            /** Output Handling */
+	    header("Pragma: public");
+	    header("Expires: 0");
+	    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+	    header("Cache-Control: private",false);
+	    header("Content-Transfer-Encoding: json;\n");
+	    header("Content-Disposition: attachment; filename=$myFile");
+	    header("Content-Type: application/force-download");
+	    header("Content-Type: application/octet-stream");
+	    header("Content-Type: application/download");
+	    header("Content-Description: File Transfer");
+            /** Prevent any further output */
+	    die;
+            }            
 	}
     }
 }

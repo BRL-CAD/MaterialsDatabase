@@ -37,10 +37,12 @@ class Specialmaterials_database_links extends SpecialPage {
 	    $dbw = wfGetDB(DB_MASTER);
 	    /** This code makes the navigation bar at the top */
 	    include("navigation.php");
-	    $res2 = $dbr->select('trait_table',array('trait_name'),"",__METHOD__);
+	    $res2 = $dbr->select('trait_table',array('trait_name','t_type','u_type'),"",__METHOD__);
 	    $g = 0;
 	    foreach ($res2 as $samedata) {
 	    $array[$g] = $samedata->trait_name;
+            $traittypes[$g] = $samedata->t_type;
+            $traitunits[$g] = $samedata->u_type;
 	    $count = $g + 1;
 	    $g++;
 	    }
@@ -52,13 +54,28 @@ class Specialmaterials_database_links extends SpecialPage {
 	        array(),
 	        array($array[$i] => array('INNER JOIN', array("{$dbr->tableName('material')}.id=mat_id")))
 	        );
-		$this->getOutput()->addHTML("<form action=http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_links method='post'><table border='1' width='600' height='30' cellspacing='1' cellpadding='3'><tr><th>Material Name</th><th>".ucwords(str_ireplace("_", " ", $array[$i]))."</th><th>Timestamp</th><th>Status</th><th>Check to Approve</th></tr><br>");
+		/** Fetching trait type */
+                $trait_type = $dbw->query("SELECT type FROM `trait_type` WHERE id='".$traittypes[$i]."'");
+                foreach ($trait_type as $type) {
+                    $traittype = $type->type;
+                }
+                $this->getOutput()->addHTML("<form action=http://".$_SERVER['SERVER_NAME'].$_SERVER['SCRIPT_NAME']."/Special:materials_database_links method='post'>");
+                $this->getOutput()->addHTML("<table border='1' width='600' height='30' cellspacing='1' cellpadding='3'><tr><th>Material Name</th><th>".ucwords(str_ireplace("_", " ", $array[$i]))."</th><th>Timestamp</th><th>Status</th><th>Check to Approve</th></tr><br>");
+                /** Displaying trait type */
+                $this->getOutput()->addHTML("<b>Trait Type: </b>".ucwords(str_ireplace("_", " ", $traittype))."&emsp;");
+                /** Fetching trait unit */
+                $trait_unit = $dbw->query("SELECT units FROM `trait_units` WHERE id='".$traitunits[$i]."'");
+                foreach ($trait_unit as $unit) {
+                    $traitunit = $unit->units;
+                }
+                /** Displaying trait unit */
+                $this->getOutput()->addHTML("<b>Trait Unit: </b>".$traitunit."<br><br>");
 		foreach ($res as $row) {
 		    if($row->status == 1) {
-			$this->getOutput()->addHTML("<tr bgcolor='#B2FFFF'><td>".$row->material_name."</td><td>".$row->value."</td><td>".$row->timestamp."</td><td>".$row->status."<td><input checked type='checkbox' name='" .$array[$i].$row->mat_id."' value='".$row->mat_id."'></td></tr>");
+			$this->getOutput()->addHTML("<tr bgcolor='#B2FFFF'><td>".ucwords(str_ireplace("_", " ", $row->material_name))."</td><td>".$row->value."</td><td>".$row->timestamp."</td><td>".$row->status."<td><input checked type='checkbox' name='" .$array[$i].$row->mat_id."' value='".$row->mat_id."'></td></tr>");
 		    }
 		    else {
-			$this->getOutput()->addHTML("<tr><td>".$row->material_name."</td><td>".$row->value."</td><td>".$row->timestamp."</td><td>".$row->status."<td><input type='checkbox' name='" .$array[$i].$row->mat_id."' value='".$row->mat_id."'></td></tr>");
+			$this->getOutput()->addHTML("<tr><td>".ucwords(str_ireplace("_", " ", $row->material_name))."</td><td>".$row->value."</td><td>".$row->timestamp."</td><td>".$row->status."<td><input type='checkbox' name='" .$array[$i].$row->mat_id."' value='".$row->mat_id."'></td></tr>");
 		    }
 		    $dbr->tableName($array[$i]).$row->mat_id;
 		    if (isset($_POST[$array[$i].$row->mat_id])) {
